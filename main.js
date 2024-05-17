@@ -4,7 +4,11 @@ let ampasant = null,
     plannedMove = "",
     playerColor = "white",
     selectedPiece = "",
-    validMoves = [];
+    validMoves = [],
+	attacks_white = [],
+	attacks_black = [],
+	showCoverageWhite = false,
+	showCoverageBlack = false	;
 
 const castlingTrack = [
     {
@@ -24,6 +28,10 @@ const castlingTrack = [
 drawBoard();
 document.getElementById("table-area").addEventListener("click", moveFlow);
 
+document.getElementById("coverage-white").addEventListener("click", toggleCoverageWhite);
+
+document.getElementById("coverage-black").addEventListener("click", toggleCoverageBlack);
+
 /////////////// methods ///////////////
 
 ///// Start of main function ///////
@@ -31,13 +39,16 @@ document.getElementById("table-area").addEventListener("click", moveFlow);
 function moveFlow(event) {
     const cell = event.target.tagName !== "TD" ? event.target.parentNode : event.target,
         id = cell.id.slice(5);
+		console.log(id);
 
+	// if clicked on color of opposite players turn
     if (table[id].color !== playerColor &&
         selectedPiece === "" && Object.keys(table[id]).length > 0) {
-        alert(`It's ${playerColor}'s turn!`);
+        //alert(`It's ${playerColor}'s turn!`);
         return false;
     };
 
+	// if no piece selected
     if (selectedPiece === "") {
         if (!table[id].color) {
             return false;
@@ -60,14 +71,28 @@ function moveFlow(event) {
             } else if (check(plannedMove, plannedMove, true)) {
                 alert("Check!");
             };
+		// else not a valid move, do nothing
         } else {
-            selectedPiece = "";
-            validMoves = [];
+			
+			// if clicked on another piece of same color
+			// show active moves
+			if (table[id].color === playerColor){
+				selectedPiece = id;
+				validMoves = [];
+				
+			}else{
+			
+				selectedPiece = "";
+				validMoves = [];
+			
+			}
+
         };
     };
 
     drawBoard();
 
+	// If a piece is selected, show valid moves
     if (selectedPiece !== "") {
         document.getElementById("cell-" + id).classList.add("active");
         validMoves.push(...showValidMoves(id));
@@ -77,6 +102,64 @@ function moveFlow(event) {
 
 /////// End of main function ////
 
+
+function toggleCoverageWhite(){
+	if (showCoverageWhite === false){
+		showCoverageWhite = true;
+		const counts = {};
+
+		for (const num of attacks_white) {
+			counts[num] = counts[num] ? counts[num] + 1 : 1;
+		}
+		
+		for (let key in counts){
+				document.getElementById("cell-" + key).classList.add("covered" + counts[key]);
+		}
+		
+	}else{
+		showCoverageWhite = false;
+		const boxes = document.querySelectorAll('td');
+
+		boxes.forEach(box => {
+			box.classList.remove('covered1');
+			box.classList.remove('covered2');
+			box.classList.remove('covered3');
+			box.classList.remove('covered4');
+			box.classList.remove('covered5');
+			box.classList.remove('covered6');
+		});
+	}
+}
+
+function toggleCoverageBlack(){
+	if (showCoverageBlack === false){
+		showCoverageBlack = true;
+		const counts = {};
+
+		for (const num of attacks_black) {
+			counts[num] = counts[num] ? counts[num] + 1 : 1;
+		}
+		
+		for (let key in counts){
+				document.getElementById("cell-" + key).classList.add("coveredb" + counts[key]);
+		}
+		
+	}else{
+		showCoverageBlack = false;
+		const boxes = document.querySelectorAll('td');
+
+		boxes.forEach(box => {
+			box.classList.remove('coveredb1');
+			box.classList.remove('coveredb2');
+			box.classList.remove('coveredb3');
+			box.classList.remove('coveredb4');
+			box.classList.remove('coveredb5');
+			box.classList.remove('coveredb6');
+		});
+	}
+}
+
+
 function showValidMoves(id) {
     if (table[id].piece === "rook") return rookMoves(id);
     else if (table[id].piece === "king") return kingMoves(id);
@@ -84,6 +167,15 @@ function showValidMoves(id) {
     else if (table[id].piece === "bishop") return bishopMoves(id);
     else if (table[id].piece === "knight") return knightMoves(id);
     else if (table[id].piece === "pawn") return pawnMoves(id);
+};
+
+function showValidAttacks(id) {
+    if (table[id].piece === "rook") return rookMoves(id);
+    else if (table[id].piece === "king") return kingMoves(id);
+    else if (table[id].piece === "queen") return queenMoves(id);
+    else if (table[id].piece === "bishop") return bishopMoves(id);
+    else if (table[id].piece === "knight") return knightMoves(id);
+    else if (table[id].piece === "pawn") return pawnAttacks(id);
 };
 
 function validMove(start, end) {
@@ -220,6 +312,37 @@ function pawnMoves(idS) {
     return moves;
 };
 
+
+function pawnAttacks(idS) {
+    const id = parseInt(idS, 10),
+        color = table[id].color,
+        opponentColor = color === "white" ? "black" : "white",
+        moves = [],
+        directions = [[-7, -9], [7, 9]],
+        side = color === "white" ? 0 : 1;
+
+	if (color === "black"){
+		if ([8,16,24, 32, 40, 48].indexOf(id) == -1){
+			attack1 = id + 8 - 1;
+			moves.push(attack1);
+		}
+		if ([15,23,31,39, 47, 55].indexOf(id) == -1){
+			attack2 = id + 8 + 1;
+			moves.push(attack2);
+		} 
+	} else {
+		if ([8,16,24, 32, 40, 48].indexOf(id) == -1){
+			attack1 = id - 8 + 1;
+			moves.push(attack1);
+		}
+		if ([15,23,31,39, 47, 55].indexOf(id) == -1){
+			attack2 = id - 8 - 1;
+			moves.push(attack2);
+		}
+	}
+	return moves;
+};
+
 // Other functions
 
 function checkMate() {
@@ -227,7 +350,7 @@ function checkMate() {
     let pieceMoves = [];
 
     table.forEach((cell, id) => {
-        if (cell.color === playerColor) {
+        if (typeof(cell) != "undefined" && cell.color === playerColor) {
             pieceMoves = showValidMoves(id);
             pieceMoves = pieceMoves.filter((element) => !check(id, element, false));
             validMoves.push(...pieceMoves);
@@ -263,9 +386,11 @@ function check(start, end, justCheck) {
     table[start] = {};
 
     table.forEach((cell, id) => {
-        if (Object.keys(cell).length > 0 && cell.color !== color) {
-            checkingFigures.push(...showValidMoves(id));
-        };
+		if (typeof(cell) != "undefined"){
+			if (Object.keys(cell).length > 0 && cell.color !== color) {
+				checkingFigures.push(...showValidMoves(id));
+			}
+		};
     });
 
     checkingFigures = checkFigures(checkingFigures, color);
@@ -438,25 +563,77 @@ function validJump(start, end) {
     return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) === 3;
 };
 
+
+
+
 function drawBoard() {
+	
+	updateAttacks();
+	
     let html = "<table id='chessTable'>";
     for (let i = 0; i < table.length; i++) {
         if (i % 8 === 0) {
             html += "<tr>";
         };
-        if (Object.keys(table[i]).length > 0) {
+		
+        if (typeof(table[i]) != "undefined" && Object.keys(table[i]).length > 0) {
             const color = table[i].color,
                 piece = table[i].piece;
             html += `<td id="cell-${i}">${pieces[piece][color]} <span class="cell-number">${i}</span>
-            <span class="cell-cooridantes">${convertCell(i)}</span></td>`;
+            <span class="cell-cooridantes">${convertCell(i)}</span>
+			<span class="cell-attacks">${attackCount(i)}</span></td>`;
         } else {
             html += `<td id="cell-${i}"><span class="cell-number">${i}</span>
-            <span class="cell-cooridantes">${convertCell(i)}</span></td>`;
+            <span class="cell-cooridantes">${convertCell(i)}</span>
+			<span class="cell-attacks">${attackCount(i)}</span></td>`;
         };
+		
         if (i % 8 === 7) {
             html += "</tr>";
         };
     };
     html += "</table>";
     document.getElementById("table-area").innerHTML = html;
+};
+
+
+
+
+function updateAttacks() {
+
+	attacks_white = [];
+	attacks_black = [];
+    table.forEach((cell, id) => {
+
+		if (typeof(cell) != "undefined"){
+			
+			
+			if (Object.keys(cell).length > 0 && cell.color !== "black"){
+				attacks_white.push(...showValidAttacks(id));
+			}
+			if (Object.keys(cell).length > 0 && cell.color !== "white"){
+				attacks_black.push(...showValidAttacks(id));
+			}
+		};
+		
+    });
+
+};
+
+
+function attackCount(id) {
+	
+	ct_white = 0;
+	for (const num of attacks_white){
+		if (num == id){
+		ct_white++;	
+		}
+	};
+	ct_black = 0;
+	for (const num of attacks_black){
+		if (num == id){
+		ct_black++;	
+		}
+	};
+    return `${ct_white}/${ct_black}`;
 };
