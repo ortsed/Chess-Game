@@ -11,6 +11,15 @@ body {
     margin-top: 50px;
     border: 1px solid black;
 }
+
+#buttons {
+	width: 640px;
+    margin: auto;
+}
+#button-coverage {
+	margin: auto;
+}
+
 table {
     border-collapse: collapse;
 }
@@ -27,7 +36,7 @@ td {
     border: 1px solid black;
     font-size: 70px;
 }
-.cell-number, .cell-cooridantes {
+.cell-number, .cell-cooridantes, .cell-attacks {
     position: absolute;
     font-size: 12px;
 }
@@ -35,15 +44,66 @@ td {
     top: 0;
     left: 0;
     color: brown;
+	visibility:hidden;
 }
-.cell-cooridantes {
+.cell-attacks {
     top: 63px;
     left: 63px;
     color: green;
+	
+}
+
+.cell-cooridantes {
+    top: 0px;
+    left: 63px;
+    color: red;
+	visibility:hidden;
 }
 .active {
     background-color: rgb(255, 160, 176) !important;
 }
+
+.covered1 {
+    background-color: rgb(150,150,200) !important;
+}
+.covered2 {
+    background-color: rgb(110,110,200) !important;
+}
+.covered3 {
+    background-color: rgb(70,70,200) !important;
+}
+.covered4 {
+    background-color: rgb(30,30,200) !important;
+}
+.covered5 {
+    background-color: rgb(20,20,200) !important;
+}
+.covered6 {
+    background-color: rgb(10,10,200) !important;
+}
+
+
+.coveredb1 {
+    background-color: rgb(200,150,150) !important;
+}
+.coveredb2 {
+    background-color: rgb(200,110,110) !important;
+}
+.coveredb3 {
+    background-color: rgb(200, 70,70) !important;
+}
+.coveredb4 {
+    background-color: rgb(200, 30,30) !important;
+}
+.coveredb5 {
+    background-color: rgb(200, 20,20) !important;
+}
+.coveredb6 {
+    background-color: rgb(200, 10,10) !important;
+}
+
+
+
 .avilable-moves {
     background-color: rgb(255, 201, 210) !important;
 }
